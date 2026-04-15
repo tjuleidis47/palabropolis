@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palabrópolis – Prototipos educativos: del código al aula</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap');
+
+:root { --gold:#c9a227; --cream:#faf6ed; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Crimson Pro',Georgia,serif;background:#0c0906;color:var(--cream);min-height:100vh;overflow-x:hidden;position:relative}
+
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.ambient span{position:absolute;font-size:1.4rem;opacity:.07;animation:floatAmbient linear infinite}
+@keyframes floatAmbient{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.07}90%{opacity:.07}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+
+.screen{display:none;position:relative;z-index:1;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ══ INICIO ══ */
+#screen-home{background:radial-gradient(ellipse at 50% 0%,#1f1500,#0c0906 70%);align-items:center;padding:3rem 1.5rem 4rem}
+.home-header{text-align:center;margin-bottom:3.5rem}
+.home-title{font-family:'Playfair Display',serif;font-size:clamp(3.5rem,9vw,7rem);font-weight:900;letter-spacing:-.02em;line-height:1;background:linear-gradient(135deg,#c9a227,#f0d060 40%,#c9a227 70%,#8a6800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.4rem}
+.home-subtitle{font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.25em;color:#8a7a55;text-transform:uppercase;margin-bottom:1.2rem}
+.home-desc{font-size:1.15rem;font-style:italic;color:#c8b88a;max-width:560px;margin:0 auto;line-height:1.6}
+.home-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1.5rem auto}
+
+.worlds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;max-width:960px;width:100%}
+.world-card{border-radius:18px;padding:2rem 1.8rem;cursor:pointer;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06);transition:transform .3s,box-shadow .3s;backdrop-filter:blur(4px)}
+.world-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04),transparent 60%);pointer-events:none}
+.world-card:hover{transform:translateY(-6px) scale(1.01)}
+.world-card[data-world="1"]{background:linear-gradient(145deg,#0d1b2a,#162537);box-shadow:0 8px 40px rgba(201,162,39,.15)}
+.world-card[data-world="1"]:hover{box-shadow:0 16px 60px rgba(201,162,39,.3)}
+.world-card[data-world="2"]{background:linear-gradient(145deg,#2c1f10,#3d2d18);box-shadow:0 8px 40px rgba(212,168,83,.15)}
+.world-card[data-world="2"]:hover{box-shadow:0 16px 60px rgba(212,168,83,.3)}
+.world-card[data-world="3"]{background:linear-gradient(145deg,#1e0a2e,#2a1040);box-shadow:0 8px 40px rgba(217,127,196,.15)}
+.world-card[data-world="3"]:hover{box-shadow:0 16px 60px rgba(217,127,196,.3)}
+.world-card[data-world="4"]{background:linear-gradient(145deg,#041f3a,#082d50);box-shadow:0 8px 40px rgba(61,214,214,.15)}
+.world-card[data-world="4"]:hover{box-shadow:0 16px 60px rgba(61,214,214,.3)}
+.world-card[data-world="5"]{background:linear-gradient(145deg,#1c160e,#2a2015);box-shadow:0 8px 40px rgba(200,169,126,.15)}
+.world-card[data-world="5"]:hover{box-shadow:0 16px 60px rgba(200,169,126,.3)}
+.world-card[data-world="6"]{background:linear-gradient(145deg,#16140f,#211e17);box-shadow:0 8px 40px rgba(168,152,128,.15)}
+.world-card[data-world="6"]:hover{box-shadow:0 16px 60px rgba(168,152,128,.3)}
+
+.world-icon{font-size:3.2rem;margin-bottom:1rem;display:block}
+.world-name{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;margin-bottom:.35rem}
+.world-card[data-world="1"] .world-name{color:#c9a227}
+.world-card[data-world="2"] .world-name{color:#d4a853}
+.world-card[data-world="3"] .world-name{color:#d97fc4}
+.world-card[data-world="4"] .world-name{color:#3dd6d6}
+.world-card[data-world="5"] .world-name{color:#c8a97e}
+.world-card[data-world="6"] .world-name{color:#a89880}
+.world-theme{font-size:.88rem;opacity:.72;line-height:1.45;font-style:italic;color:#d4c9a8}
+.world-levels{margin-top:1rem;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.12em;opacity:.5;text-transform:uppercase}
+
+.sound-btn{position:fixed;top:1.2rem;right:1.5rem;z-index:100;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;backdrop-filter:blur(6px)}
+.sound-btn:hover{background:rgba(255,255,255,.13)}
+
+/* ══ LECCIÓN ══ */
+#screen-lesson{background:#100d08;padding:2rem 1.5rem;align-items:center}
+.lesson-inner{max-width:700px;width:100%}
+.lesson-header{text-align:center;margin-bottom:2.5rem}
+.lesson-icon{font-size:4rem;margin-bottom:.8rem;display:block}
+.lesson-world-name{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;margin-bottom:.3rem}
+.lesson-subtitle{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;opacity:.55}
+.lesson-desc{font-size:1.15rem;line-height:1.7;color:#d4c9a8;margin-bottom:2rem;font-style:italic;text-align:center}
+.key-block{border-radius:14px;padding:1.4rem 1.8rem;margin-bottom:2rem;border-left:4px solid var(--gold);background:rgba(201,162,39,.07)}
+.key-block-title{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.key-block p{font-size:1rem;line-height:1.65;color:#e0d5b8}
+.concepts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem;margin-bottom:2.5rem}
+.concept-card{border-radius:12px;padding:1.2rem 1.1rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);text-align:center}
+.concept-emoji{font-size:1.8rem;margin-bottom:.5rem;display:block}
+.concept-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.3rem}
+.concept-def{font-size:.85rem;opacity:.7;line-height:1.45}
+.btn-play{display:block;width:100%;padding:1.1rem;border-radius:14px;border:none;font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:transform .2s,filter .2s}
+.btn-play:hover{transform:scale(1.02);filter:brightness(1.1)}
+.btn-back{display:inline-flex;align-items:center;gap:.4rem;background:none;border:none;color:#8a7a55;font-family:'Crimson Pro',serif;font-size:1rem;cursor:pointer;margin-bottom:1.5rem;padding:.3rem 0;transition:color .2s}
+.btn-back:hover{color:var(--gold)}
+
+/* ══ JUEGO ══ */
+#screen-game{padding:1.2rem 1.5rem 2rem;align-items:center}
+.game-inner{max-width:720px;width:100%}
+.hud{display:flex;align-items:center;gap:.8rem;margin-bottom:1.3rem;flex-wrap:wrap}
+.hud-world-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;flex:1}
+.hud-score{font-family:'Space Mono',monospace;font-size:.9rem;color:var(--gold)}
+.hud-lives{font-size:1.1rem;letter-spacing:.1em}
+.hud-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--cream);border-radius:8px;padding:.35rem .8rem;font-size:.85rem;cursor:pointer;transition:background .2s;font-family:'Crimson Pro',serif}
+.hud-btn:hover{background:rgba(255,255,255,.12)}
+.q-badge{font-family:'Space Mono',monospace;font-size:.68rem;color:#8a7a55;letter-spacing:.08em}
+
+.progress-wrap{height:6px;background:rgba(255,255,255,.07);border-radius:10px;margin-bottom:.5rem;overflow:hidden}
+.progress-bar{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--gold),#f0d060);transition:width .5s ease}
+.progress-label{font-family:'Space Mono',monospace;font-size:.7rem;opacity:.45;text-align:right;margin-bottom:1.2rem}
+.timer-wrap{height:5px;background:rgba(255,255,255,.07);border-radius:10px;margin-bottom:1.5rem;overflow:hidden}
+.timer-bar{height:100%;border-radius:10px;transition:width .9s linear,background .5s;background:#3dd6d6}
+.timer-bar.warning{background:#f0a030}
+.timer-bar.danger{background:#e03030}
+
+.level-card{border-radius:18px;padding:2rem 1.8rem;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.level-mission{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;opacity:.5;margin-bottom:.8rem}
+.level-fragment{font-size:1.05rem;line-height:1.75;color:#e0d5b8;margin-bottom:1.1rem;font-style:italic;border-left:3px solid rgba(201,162,39,.35);padding-left:1.1rem}
+.level-hint{font-size:.88rem;color:#a89060;margin-bottom:1rem;display:flex;align-items:flex-start;gap:.4rem}
+.level-hint::before{content:'💡';font-size:.9rem;flex-shrink:0}
+.level-question{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;line-height:1.45;color:var(--cream)}
+
+.options-grid{display:grid;gap:.85rem;margin-bottom:1rem}
+.option-btn{text-align:left;padding:1rem 1.3rem;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--cream);font-family:'Crimson Pro',serif;font-size:1.05rem;cursor:pointer;transition:background .2s,border-color .2s,transform .15s;line-height:1.4}
+.option-btn:hover:not(:disabled){background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.22);transform:translateX(4px)}
+.option-btn.correct{background:rgba(50,200,100,.18);border-color:#32c864;color:#7ef7a8}
+.option-btn.wrong{background:rgba(220,50,50,.18);border-color:#e04040;color:#f99}
+.option-btn:disabled{cursor:default}
+
+/* ══ MODAL ══ */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem}
+.modal-overlay.active{display:flex}
+.modal-box{background:#18140d;border-radius:20px;padding:2.5rem 2rem;max-width:520px;width:100%;border:1px solid rgba(255,255,255,.1);text-align:center;animation:modalIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes modalIn{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-icon{font-size:3.5rem;margin-bottom:.8rem;display:block}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:.7rem}
+.modal-title.correct{color:#32c864}
+.modal-title.wrong{color:#e04040}
+.modal-explanation{font-size:1.05rem;line-height:1.65;color:#d4c9a8;margin-bottom:1rem}
+.modal-remember{font-size:.9rem;font-style:italic;color:var(--gold);margin-bottom:1.8rem;padding:.8rem 1.2rem;background:rgba(201,162,39,.08);border-radius:10px}
+.modal-btn{padding:.9rem 2.5rem;border-radius:12px;border:none;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform .2s,filter .2s}
+.modal-btn:hover{transform:scale(1.04);filter:brightness(1.1)}
+.modal-btn.correct-btn{background:linear-gradient(135deg,#1a8040,#32c864);color:#fff}
+.modal-btn.wrong-btn{background:linear-gradient(135deg,#8a2020,#e04040);color:#fff}
+
+/* ══ FIN ══ */
+#screen-end{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,#1f1500,#0c0906 80%);text-align:center;padding:2rem}
+.end-inner{max-width:520px}
+.end-trophy{font-size:5rem;margin-bottom:1rem}
+.end-title{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;background:linear-gradient(135deg,#c9a227,#f0d060,#c9a227);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem}
+.end-score{font-family:'Space Mono',monospace;font-size:3rem;color:var(--gold);margin:1rem 0 .3rem}
+.end-message{font-size:1.2rem;color:#c8b88a;font-style:italic;margin-bottom:2rem}
+.end-btn{display:inline-block;padding:1rem 3rem;border-radius:14px;border:none;background:linear-gradient(135deg,#8a6800,#c9a227,#f0d060,#c9a227);color:#0c0906;font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;cursor:pointer;transition:transform .2s,filter .2s}
+.end-btn:hover{transform:scale(1.04);filter:brightness(1.1)}
+
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:300}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(201,162,39,.3);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="ambient" id="ambient"></div>
+<canvas id="confetti-canvas"></canvas>
+<button class="sound-btn" id="soundBtn">🔊</button>
+
+<!-- INICIO -->
+<div class="screen active" id="screen-home">
+  <div class="home-header">
+    <h1 class="home-title">Palabrópolis</h1>
+    <p class="home-subtitle">Prototipos educativos · del código al aula</p>
+    <div class="home-divider"></div>
+    <p class="home-desc">Laboratorio literario interactivo para explorar géneros, estructura narrativa, secuencias, comprensión lectora, personajes y figuras literarias.</p>
+  </div>
+  <div class="worlds-grid" id="worldsGrid"></div>
+</div>
+
+<!-- LECCIÓN -->
+<div class="screen" id="screen-lesson">
+  <div class="lesson-inner">
+    <button class="btn-back" id="lessonBack">← Inicio</button>
+    <div class="lesson-header">
+      <span class="lesson-icon" id="lessonIcon"></span>
+      <h2 class="lesson-world-name" id="lessonName"></h2>
+      <p class="lesson-subtitle" id="lessonSubtitle"></p>
+    </div>
+    <p class="lesson-desc" id="lessonDesc"></p>
+    <div class="key-block"><div class="key-block-title">📌 Clave didáctica</div><p id="lessonKey"></p></div>
+    <div class="concepts-grid" id="conceptsGrid"></div>
+    <button class="btn-play" id="btnPlay">¡Comenzar aventura! →</button>
+  </div>
+</div>
+
+<!-- JUEGO -->
+<div class="screen" id="screen-game">
+  <div class="game-inner">
+    <div class="hud">
+      <span class="hud-world-name" id="hudWorldName"></span>
+      <span class="q-badge" id="hudQBadge"></span>
+      <span class="hud-score" id="hudScore">⭐ 0</span>
+      <span class="hud-lives" id="hudLives">❤️❤️❤️</span>
+      <button class="hud-btn" id="gameHomeBtn">🏠 Inicio</button>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">Nivel 1 / 5</div>
+    <div class="timer-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+    <div class="level-card">
+      <div class="level-mission" id="levelMission"></div>
+      <div class="level-fragment" id="levelFragment"></div>
+      <div class="level-hint" id="levelHint"></div>
+      <div class="level-question" id="levelQuestion"></div>
+    </div>
+    <div class="options-grid" id="optionsGrid"></div>
+  </div>
+</div>
+
+<!-- FIN -->
+<div class="screen" id="screen-end">
+  <div class="end-inner">
+    <div class="end-trophy" id="endTrophy">🏆</div>
+    <h2 class="end-title" id="endTitle"></h2>
+    <div class="end-score" id="endScore"></div>
+    <p class="end-message" id="endMessage"></p>
+    <button class="end-btn" onclick="goHome()">Volver al inicio</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal-box">
+    <span class="modal-icon" id="modalIcon"></span>
+    <h3 class="modal-title" id="modalTitle"></h3>
+    <p class="modal-explanation" id="modalExplanation"></p>
+    <p class="modal-remember" id="modalRemember"></p>
+    <button class="modal-btn" id="modalBtn" onclick="modalNext()"></button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  UTILIDADES
+// ══════════════════════════════════════════════════════════
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function pickRandom(arr,n){ return shuffle(arr).slice(0,Math.min(n,arr.length)); }
+
+// Baraja las opciones de una pregunta y devuelve el nuevo índice correcto
+function shuffleOptions(q){
+  const indexed = q.options.map((text,i)=>({text, isCorrect: i===q.correct}));
+  const s = shuffle(indexed);
+  return { options: s.map(o=>o.text), correct: s.findIndex(o=>o.isCorrect) };
+}
+
+// ══════════════════════════════════════════════════════════
+//  BANCO DE PREGUNTAS (10 por mundo)
+// ══════════════════════════════════════════════════════════
+const WORLDS=[
+  /* ─── 1. LiteraBOT ─── */
+  {
+    id:1,icon:'🤖',name:'LiteraBOT',
+    theme:'Géneros literarios, recursos literarios y comprensión general',
+    color:'#c9a227',bg:'#0d1b2a',
+    desc:'Descubre los grandes géneros de la literatura y los recursos que los autores usan para crear mundos de palabras.',
+    key:'La literatura se organiza en géneros (narrativo, lírico, dramático) según su forma y propósito. Conocerlos nos ayuda a leer con mayor comprensión y disfrutar más los textos.',
+    concepts:[
+      {emoji:'📖',name:'Género narrativo',def:'Cuenta historias con personajes, ambiente y trama.'},
+      {emoji:'🎭',name:'Género dramático',def:'Texto escrito para ser representado en escena.'},
+      {emoji:'🎵',name:'Género lírico',def:'Expresa sentimientos, generalmente en verso.'},
+      {emoji:'✍️',name:'Recursos literarios',def:'Figuras del lenguaje que embellecen el texto.'},
+    ],
+    btnColor:'linear-gradient(135deg,#8a6800,#c9a227)',
+    questions:[
+      {mission:'Identifica el género',fragment:'"Ayer soñé que veía a Dios y que a Dios hablaba; y soñé que Dios me oía... Después soñé que soñaba." — Antonio Machado',hint:'Fíjate en el verso y en la expresión de sentimientos.',question:'¿A qué género literario pertenece este fragmento?',options:['Género lírico','Género narrativo','Género dramático','Ensayo'],correct:0,explanation:'Es poesía de Antonio Machado: expresa emociones mediante versos. Eso caracteriza al género lírico.',remember:'El género lírico usa el verso para expresar el mundo interior del hablante.'},
+      {mission:'Clasifica el texto',fragment:'"Acto I, Escena II. ROMEO: Pero espera, ¿qué luz se asoma en aquella ventana? Es el oriente y Julieta es el sol."',hint:'Observa cómo está organizado (actos, escenas, diálogos).',question:'¿Cuál es el género de este fragmento?',options:['Género dramático','Género lírico','Cuento corto','Crónica'],correct:0,explanation:'Tiene actos, escenas y didascalias: elementos del género dramático, escrito para teatro.',remember:'El género dramático incluye obras de teatro; se organiza en actos y escenas.'},
+      {mission:'Narrativa detectivesca',fragment:'El viejo reloj marcó las doce cuando Mateo encontró la carta. Sus manos temblaron. La letra era inconfundible: era de su padre, muerto hacía diez años.',hint:'¿Hay un narrador que cuenta hechos y personajes?',question:'¿Qué género es este fragmento?',options:['Narrativo','Lírico','Dramático','Ensayo'],correct:0,explanation:'Hay un narrador que cuenta hechos con personajes y tensión. Eso define al género narrativo.',remember:'El género narrativo cuenta una historia a través de un narrador.'},
+      {mission:'Recurso literario',fragment:'"Sus ojos son dos luceros que iluminan mi camino en la más oscura noche."',hint:'¿Se compara algo con otra cosa para embellecerlo sin usar "como"?',question:'¿Qué figura literaria aparece en este verso?',options:['Metáfora','Hipérbole','Onomatopeya','Elipsis'],correct:0,explanation:'Los ojos son identificados con "luceros" sin usar "como". Eso es una metáfora.',remember:'La metáfora compara dos realidades sin nexos comparativos.'},
+      {mission:'Comprensión general',fragment:'"Puedo escribir los versos más tristes esta noche. Yo la quise, y a veces ella también me quería." — Pablo Neruda',hint:'¿Qué sentimiento domina el texto?',question:'¿Cuál es el tema principal de estos versos?',options:['El amor perdido','La alegría del encuentro','La naturaleza salvaje','Un viaje al mar'],correct:0,explanation:'El poema expresa tristeza por un amor que ya no existe. El tiempo pasado y "más tristes" lo confirman.',remember:'El tema de un poema es su idea central, la emoción que lo impulsa.'},
+      {mission:'¿Cuento o poema?',fragment:'"Había una vez una princesa que vivía en una torre altísima. Nadie podía escalar sus paredes de piedra, pero ella cantaba cada tarde para el viento."',hint:'¿Tiene narrador, personajes y un ambiente concreto?',question:'¿A qué género pertenece este texto?',options:['Género narrativo','Género lírico','Género dramático','Periodístico'],correct:0,explanation:'Tiene un narrador ("había una vez"), personajes y un escenario. Eso es el género narrativo.',remember:'El género narrativo siempre tiene un narrador que cuenta los hechos.'},
+      {mission:'El ensayo literario',fragment:'"La libertad es la más preciada de las conquistas humanas. Sin ella, la dignidad se convierte en una ilusión vacía."',hint:'¿Se presenta una opinión argumentada sobre un tema abstracto?',question:'¿Qué tipo de texto es este fragmento?',options:['Ensayo','Poema lírico','Obra de teatro','Cuento fantástico'],correct:0,explanation:'El ensayo argumenta una postura personal (la libertad) de forma reflexiva, sin narración ni verso.',remember:'El ensayo expone ideas y opiniones del autor sobre temas abstractos o filosóficos.'},
+      {mission:'Narrador en primera persona',fragment:'"Yo nací en un pueblo pequeño junto al río. Mi madre me contó que llovió toda la noche anterior a mi llegada al mundo."',hint:'¿Quién narra la historia y desde qué punto de vista?',question:'¿Qué tipo de narrador tiene este fragmento?',options:['Narrador en primera persona','Narrador omnisciente','Narrador en segunda persona','Narrador externo'],correct:0,explanation:'El narrador usa "yo" y cuenta su propia historia. Eso define al narrador en primera persona.',remember:'El narrador en primera persona es parte de la historia y usa "yo" para narrar.'},
+      {mission:'Tema vs. asunto',fragment:'Un cuento habla de un anciano que cuida su jardín todos los días. Las flores mueren cada otoño y vuelven cada primavera.',hint:'¿Cuál es la idea profunda más allá de lo que se cuenta?',question:'¿Cuál es el TEMA profundo del cuento?',options:['El ciclo de la vida y la esperanza','La labor de los jardineros','El cultivo de flores','Los cambios del clima'],correct:0,explanation:'Más allá del jardín, el cuento refleja el ciclo vital: muerte y renacimiento. Ese es el TEMA.',remember:'El tema es la idea universal detrás de la historia; el asunto es lo que pasa concretamente.'},
+      {mission:'Reconoce el género',fragment:'"VENDEDOR: ¡Pasen, pasen! ¡Hay maravillas para todos! (El pueblo se congrega. Suena una flauta en el fondo del escenario.)"',hint:'¿Hay indicaciones de escenario y parlamentos de personajes?',question:'¿Qué género literario representa este fragmento?',options:['Dramático','Narrativo','Lírico','Epistolar'],correct:0,explanation:'Las acotaciones entre paréntesis y los nombres antes del diálogo son propios del género dramático.',remember:'El género dramático incluye acotaciones escénicas que guían la representación teatral.'},
+    ]
+  },
+
+  /* ─── 2. CuentoLAB ─── */
+  {
+    id:2,icon:'📜',name:'CuentoLAB',
+    theme:'Inicio, nudo y desenlace',
+    color:'#d4a853',bg:'#2c1f10',
+    desc:'Todo cuento tiene una estructura. Aprende a identificar sus tres partes fundamentales y conviértete en arquitecto de historias.',
+    key:'El cuento clásico se divide en inicio (presentación), nudo (conflicto) y desenlace (solución). Reconocer esta estructura facilita la comprensión lectora.',
+    concepts:[
+      {emoji:'🌅',name:'Inicio',def:'Presenta personajes, tiempo, lugar y situación inicial.'},
+      {emoji:'⚡',name:'Nudo',def:'Aparece el conflicto o problema que altera el orden.'},
+      {emoji:'🌄',name:'Desenlace',def:'Se resuelve el conflicto y la historia llega a su fin.'},
+      {emoji:'🔗',name:'Coherencia',def:'Las tres partes se conectan de forma lógica y fluida.'},
+    ],
+    btnColor:'linear-gradient(135deg,#6b4a10,#d4a853)',
+    questions:[
+      {mission:'Identifica el inicio',fragment:'"Érase una vez, en un lejano reino entre montañas, una joven llamada Lucía que vivía con su abuela en una cabaña de madera."',hint:'El inicio presenta quién, dónde y cuándo.',question:'¿Qué parte del cuento es este fragmento?',options:['Inicio','Nudo','Desenlace','Clímax'],correct:0,explanation:'Se presentan los personajes, el lugar y la época. Eso es el INICIO.',remember:'El inicio responde: ¿Quién? ¿Dónde? ¿Cuándo?'},
+      {mission:'El nudo aparece',fragment:'"De repente, un rugido sacudió el bosque. El lobo había destrozado la canasta de flores y Lucía no sabía cómo volver a casa sin cruzar su camino."',hint:'Aparece un problema que cambia el rumbo.',question:'¿Qué parte del cuento es este fragmento?',options:['Nudo','Inicio','Desenlace','Prólogo'],correct:0,explanation:'El lobo crea un conflicto: Lucía no puede regresar. Eso es el NUDO.',remember:'El nudo presenta el conflicto que el personaje debe resolver.'},
+      {mission:'El desenlace llega',fragment:'"Al fin, Lucía encontró un sendero oculto entre los robles. Llegó sana y salva a casa de su abuela, quien la esperaba con un cálido abrazo y sopa caliente."',hint:'¿Se resuelve el problema?',question:'¿Qué parte del cuento representa este fragmento?',options:['Desenlace','Nudo','Inicio','Epílogo'],correct:0,explanation:'El conflicto se resuelve (Lucía llega a casa sana). Eso es el DESENLACE.',remember:'El desenlace cierra el conflicto y da conclusión a la historia.'},
+      {mission:'Ordena la estructura',fragment:'Texto A: "Martín llegó al pueblo." Texto B: "Pero el puente estaba roto." Texto C: "Construyó una balsa y cruzó el río."',hint:'Piensa en qué parte corresponde cada fragmento.',question:'¿Cuál es el orden correcto inicio-nudo-desenlace?',options:['A – B – C','B – C – A','C – A – B','A – C – B'],correct:0,explanation:'A es el inicio, B es el nudo, C es el desenlace.',remember:'La estructura narrativa básica: inicio → nudo → desenlace.'},
+      {mission:'Falta una parte',fragment:'"Paula encontró un mapa misterioso bajo su cama. ___________. Al final, descubrió que el tesoro era un álbum de fotos de su abuela."',hint:'¿Qué parte falta entre el inicio y el desenlace?',question:'¿Qué parte del cuento completa el espacio en blanco?',options:['El nudo (un conflicto o aventura)','Otro desenlace','Un segundo inicio','La moraleja'],correct:0,explanation:'Falta el NUDO: el problema o aventura que Paula vive para llegar al tesoro.',remember:'Sin nudo no hay historia: el conflicto es el motor de la narración.'},
+      {mission:'¿Dónde termina el nudo?',fragment:'"El barco iba a naufragar. Las olas eran enormes y el capitán perdió el timón. Durante horas lucharon contra la tormenta. Finalmente, el cielo se despejó y divisaron tierra."',hint:'El nudo termina cuando el conflicto empieza a resolverse.',question:'¿En qué momento comienza el desenlace de este fragmento?',options:['Cuando el cielo se despeja y ven tierra','Cuando el barco pierde el timón','Cuando las olas son enormes','Cuando el capitán sube al barco'],correct:0,explanation:'El cielo despejado y ver tierra marcan el inicio de la solución del conflicto: ahí empieza el desenlace.',remember:'El desenlace empieza cuando el conflicto principal comienza a resolverse.'},
+      {mission:'Tipo de desenlace',fragment:'"Después de tanto sufrimiento, el príncipe no encontró el antídoto. La princesa durmió para siempre y el reino se cubrió de silencio."',hint:'¿Se resuelve el problema de forma positiva o negativa?',question:'¿Qué tipo de desenlace tiene esta historia?',options:['Desenlace trágico','Desenlace feliz','Desenlace abierto','Desenlace cómico'],correct:0,explanation:'El príncipe fracasa y la princesa no se salva. Eso es un desenlace trágico.',remember:'Un desenlace puede ser feliz, trágico o abierto, según cómo se resuelve el conflicto.'},
+      {mission:'El inicio clásico',fragment:'"En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero..." — Don Quijote',hint:'¿Qué información aporta este arranque?',question:'¿Qué elementos del inicio están presentes en este fragmento?',options:['Lugar, tiempo y personaje principal','Solo el tiempo','Solo el personaje','El nudo y el conflicto'],correct:0,explanation:'Se presenta el lugar (La Mancha), el tiempo (no ha mucho) y el personaje (el hidalgo). Son los tres elementos del inicio.',remember:'El inicio establece el escenario: lugar, tiempo y presentación del personaje.'},
+      {mission:'Nudo con suspenso',fragment:'"Todo iba bien hasta que Clara abrió la puerta del sótano. Al fondo, entre sombras, escuchó una respiración."',hint:'¿Qué rompe la situación normal y crea tensión?',question:'¿Qué elemento convierte este fragmento en un nudo?',options:['La respiración misteriosa que genera incertidumbre','El hecho de que Clara abra una puerta','Que el sótano esté oscuro','Que Clara esté sola en casa'],correct:0,explanation:'La respiración inexplicable es el detonante del conflicto: interrumpe la normalidad y genera tensión.',remember:'El nudo introduce el elemento que rompe el equilibrio inicial de la historia.'},
+      {mission:'Estructura completa',fragment:'"Jorge perdió su perro. Lo buscó por tres días sin resultado. Al cuarto día, el perro apareció en la puerta de casa moviendo la cola."',hint:'Identifica las tres partes.',question:'¿Cuál es el nudo en esta historia?',options:['Jorge perdió su perro y lo buscó sin resultado','Jorge tenía un perro','El perro apareció en la puerta','Jorge salió a buscarlo el cuarto día'],correct:0,explanation:'La pérdida y la búsqueda fallida constituyen el conflicto (nudo). La aparición final es el desenlace.',remember:'El nudo es el problema central: sin él, no hay historia que contar.'},
+    ]
+  },
+
+  /* ─── 3. RutaNarrativa ─── */
+  {
+    id:3,icon:'🗺️',name:'RutaNarrativa',
+    theme:'Secuencias de hechos y orden narrativo',
+    color:'#d97fc4',bg:'#1e0a2e',
+    desc:'Los eventos de una historia se conectan en un orden. Aprende a leer las secuencias narrativas como un GPS de la trama.',
+    key:'La secuencia narrativa es el orden en que ocurren los hechos. Un texto puede contener flashbacks o anticipaciones. Identificar el orden cronológico nos ayuda a comprender la historia.',
+    concepts:[
+      {emoji:'1️⃣',name:'Secuencia lineal',def:'Los hechos ocurren en orden cronológico.'},
+      {emoji:'⏪',name:'Flashback',def:'Salto al pasado dentro de la narración.'},
+      {emoji:'⏩',name:'Anticipación',def:'Se adelanta algo que ocurrirá después.'},
+      {emoji:'🔢',name:'Conectores',def:'Palabras como "luego", "después", "antes" ordenan los hechos.'},
+    ],
+    btnColor:'linear-gradient(135deg,#6b1060,#d97fc4)',
+    questions:[
+      {mission:'Orden cronológico',fragment:'A) Ana llegó a la estación. B) Compró el boleto. C) Subió al tren. D) El tren partió.',hint:'¿En qué orden lógico ocurrieron estos hechos?',question:'¿Cuál es la secuencia cronológica correcta?',options:['A–B–C–D','B–A–D–C','C–D–A–B','D–C–B–A'],correct:0,explanation:'Primero llegó (A), compró el boleto (B), subió (C) y partió (D). Orden lógico y temporal.',remember:'La secuencia cronológica sigue el orden natural en que ocurren los hechos.'},
+      {mission:'Detecta el conector',fragment:'"Carlos apagó la luz. Después, escuchó un ruido extraño. Entonces decidió llamar a la policía."',hint:'¿Qué palabra une los hechos e indica el orden?',question:'¿Cuál es el conector temporal que une los hechos?',options:['Después / Entonces','Pero / Sin embargo','Aunque / A pesar','Sino / Más bien'],correct:0,explanation:'"Después" y "entonces" son conectores temporales que indican secuencia.',remember:'Los conectores temporales organizan los hechos en el tiempo.'},
+      {mission:'¿Qué ocurrió primero?',fragment:'"Cuando llegó al hospital, el doctor le explicó que debía haber tomado los medicamentos hace tres días. Esa misma mañana había sentido el primer dolor."',hint:'¿Cuál de los eventos es anterior en el tiempo?',question:'¿Qué ocurrió primero en el tiempo real de la historia?',options:['El primer dolor esa mañana','La visita al hospital','La explicación del doctor','El diagnóstico final'],correct:0,explanation:'El dolor fue lo primero; luego vino la visita. El texto está narrado de forma no lineal.',remember:'A veces el texto no sigue el orden cronológico: debemos reconstruirlo.'},
+      {mission:'Flashback en acción',fragment:'"Miraba la fotografía en silencio. Recordaba entonces aquel verano de 1985, cuando su padre le enseñó a pescar en el lago azul."',hint:'¿El narrador va hacia el pasado?',question:'¿Qué recurso narrativo usa el autor en este fragmento?',options:['Flashback (analepsis)','Anticipación (prolepsis)','Narrador omnisciente','Monólogo interior'],correct:0,explanation:'El narrador vuelve al pasado (1985) desde el presente. Ese salto al pasado es un flashback.',remember:'El flashback interrumpe el presente para mostrar eventos del pasado.'},
+      {mission:'Secuencia incompleta',fragment:'"Paula entró al laboratorio. ______. Finalmente encontró la fórmula que salvó al mundo."',hint:'¿Qué debería ocurrir entre entrar al laboratorio y encontrar la fórmula?',question:'¿Qué hecho conecta mejor los dos momentos de la historia?',options:['Investigó durante horas','Se fue a casa a descansar','Llamó a su madre','Olvidó su mochila'],correct:0,explanation:'"Investigó durante horas" conecta lógicamente la entrada al laboratorio con el descubrimiento.',remember:'Cada hecho de la secuencia debe conectar lógicamente con el anterior y el siguiente.'},
+      {mission:'Conector de causa',fragment:'"El río se desbordó. Por eso, los aldeanos tuvieron que evacuar sus casas."',hint:'¿Cuál conector expresa causa y consecuencia?',question:'¿Qué tipo de conector es "por eso"?',options:['Conector causal / consecutivo','Conector temporal','Conector adversativo','Conector comparativo'],correct:0,explanation:'"Por eso" indica que la segunda acción es consecuencia de la primera. Es un conector causal-consecutivo.',remember:'Los conectores causales (porque, por eso, por tanto) explican la causa de un hecho.'},
+      {mission:'Anticipación narrativa',fragment:'"Lo que Juan no sabía entonces es que aquella decisión cambiaría su vida para siempre."',hint:'¿El narrador adelanta algo que ocurrirá?',question:'¿Qué recurso narrativo se usa aquí?',options:['Anticipación (prolepsis)','Flashback (analepsis)','Descripción estática','Monólogo interior'],correct:0,explanation:'El narrador adelanta el futuro ("cambiaría su vida"). Eso se llama anticipación o prolepsis.',remember:'La anticipación o prolepsis adelanta eventos que ocurrirán más adelante en la historia.'},
+      {mission:'Ordena con conectores',fragment:'"Salió temprano." / "Luego caminó tres horas." / "Finalmente llegó a casa."',hint:'Los conectores temporales indican el orden.',question:'¿En qué orden van las acciones?',options:['Salió – caminó – llegó','Llegó – salió – caminó','Caminó – llegó – salió','Salió – llegó – caminó'],correct:0,explanation:'"Salió temprano" → "luego caminó" → "finalmente llegó". Los conectores marcan la secuencia.',remember:'Palabras como "luego", "después" y "finalmente" indican el orden de los hechos.'},
+      {mission:'Secuencia instruccional',fragment:'"Primero hierve el agua. Después añade la pasta. Cuando esté al dente, escurre y sirve."',hint:'¿Qué tipo de texto sigue una secuencia de pasos?',question:'¿Cómo se llama la secuencia de pasos en orden que debe seguirse?',options:['Secuencia instruccional','Secuencia narrativa de ficción','Descripción','Argumentación'],correct:0,explanation:'Los pasos de una receta siguen una secuencia instruccional: deben realizarse en orden exacto.',remember:'Las secuencias instruccionales indican pasos que deben seguirse en un orden específico.'},
+      {mission:'Lineal vs. no lineal',fragment:'"La novela empieza con la muerte del protagonista y luego, en cada capítulo, retrocede en el tiempo para explicar cómo llegó hasta ahí."',hint:'¿Los hechos se narran en orden cronológico?',question:'¿Cómo se llama esta estructura narrativa?',options:['No lineal (in medias res)','Lineal cronológica','Circular','Paralela'],correct:0,explanation:'Comenzar por el final y retroceder es una estructura no lineal, llamada "in medias res".',remember:'Una narración no lineal no sigue el orden cronológico: puede empezar por el final o el medio.'},
+    ]
+  },
+
+  /* ─── 4. Detective Lector ─── */
+  {
+    id:4,icon:'🔍',name:'Detective Lector',
+    theme:'Comprensión lectora, inferencias y preguntas clave',
+    color:'#3dd6d6',bg:'#041f3a',
+    desc:'Un buen lector va más allá de las palabras. Aprende a inferir, deducir y responder preguntas que el texto no dice directamente.',
+    key:'La comprensión lectora tiene niveles: literal (lo que dice), inferencial (lo que deducimos) y crítico (nuestra opinión). Ser "detective lector" implica leer entre líneas.',
+    concepts:[
+      {emoji:'📄',name:'Nivel literal',def:'Lo que el texto dice directamente.'},
+      {emoji:'🔎',name:'Nivel inferencial',def:'Lo que se deduce aunque no esté escrito.'},
+      {emoji:'💬',name:'Nivel crítico',def:'Nuestra valoración u opinión sobre el texto.'},
+      {emoji:'🧩',name:'Pistas textuales',def:'Palabras clave que ayudan a inferir el significado.'},
+    ],
+    btnColor:'linear-gradient(135deg,#043050,#3dd6d6)',
+    questions:[
+      {mission:'Comprensión literal',fragment:'"La anciana caminaba despacio por el mercado. Llevaba una cesta de mimbre y buscaba tomates maduros para la sopa del domingo."',hint:'La respuesta está directamente en el texto.',question:'¿Qué buscaba la anciana en el mercado?',options:['Tomates maduros','Pan fresco','Flores amarillas','Libros viejos'],correct:0,explanation:'El texto dice literalmente: "buscaba tomates maduros". Pregunta de nivel literal.',remember:'La comprensión literal extrae información que el texto expresa directamente.'},
+      {mission:'Inferencia detectivesca',fragment:'"Manuel entró a la habitación oscura. La vela sobre la mesa se había apagado. Afuera, el viento silbaba entre los árboles."',hint:'¿Qué ambiente se intuye aunque no se diga?',question:'¿Qué sensación transmite este fragmento?',options:['Misterio y tensión','Alegría y celebración','Tranquilidad campestre','Tristeza familiar'],correct:0,explanation:'La oscuridad, la vela apagada y el viento crean misterio y tensión aunque el texto no lo diga.',remember:'Una inferencia es una conclusión que sacamos a partir de las pistas del texto.'},
+      {mission:'La idea principal',fragment:'"Los bosques tropicales producen el 20% del oxígeno mundial. Albergan más del 50% de las especies. Sin embargo, cada año se destruyen millones de hectáreas por la deforestación."',hint:'¿Cuál es el mensaje central del párrafo?',question:'¿Cuál es la idea principal de este fragmento?',options:['Los bosques son vitales y están en peligro','Los animales viven en los bosques','El oxígeno viene de las plantas','La deforestación es un proceso natural'],correct:0,explanation:'El párrafo muestra la importancia y la amenaza de los bosques. Esa combinación es la idea central.',remember:'La idea principal resume de qué trata el texto y cuál es su mensaje esencial.'},
+      {mission:'Pregunta sin respuesta',fragment:'"Cuando encontraron el diario, estaba cubierto de polvo. La última entrada era del 12 de marzo de 1943. Nadie había tocado esas páginas en décadas."',hint:'¿Qué información NO da el texto?',question:'¿Qué pregunta NO puede responderse con la información del texto?',options:['¿De quién era el diario?','¿Cuándo fue la última entrada?','¿Cuánto tiempo llevaba olvidado?','¿Estaba cubierto de polvo?'],correct:0,explanation:'El texto dice cuándo (1943) y que llevaba décadas, pero NO dice de quién era.',remember:'Las preguntas inferenciales buscan lo que el texto sugiere pero no dice directamente.'},
+      {mission:'Deducción inteligente',fragment:'"Rosa llegó jadeando a la clase. Su cuaderno estaba arrugado y tenía una mancha de barro en los zapatos. La profesora la miró sin decir nada."',hint:'¿Qué podemos deducir del estado de Rosa?',question:'¿Qué podemos inferir sobre Rosa?',options:['Llegó tarde y apurada','Llegó temprano y descansada','Venía de una excursión escolar','Acababa de terminar el almuerzo'],correct:0,explanation:'Llegar jadeando, el cuaderno arrugado y el barro indican que corrió y llegó tarde. Eso es una inferencia.',remember:'Las pistas físicas y contextuales nos permiten deducir situaciones no explícitas.'},
+      {mission:'Vocabulario en contexto',fragment:'"El anciano era frugal: vivía de lo mínimo, nunca derrochaba y era feliz con muy poco."',hint:'¿Qué significa "frugal" según el contexto?',question:'¿Qué significa "frugal" en este fragmento?',options:['Austero y moderado en el consumo','Generoso y derrochador','Triste y solitario','Activo y trabajador'],correct:0,explanation:'"Frugal" = vivir de lo mínimo, no derrochar. El contexto es la mejor pista para el vocabulario.',remember:'El contexto de una palabra nos permite deducir su significado sin necesidad de un diccionario.'},
+      {mission:'Causa y efecto',fragment:'"Como no estudió para el examen, Andrés reprobó la materia y tuvo que repetir el curso."',hint:'¿Cuál es la causa y cuál el efecto?',question:'¿Cuál es la CAUSA en esta oración?',options:['No estudió para el examen','Reprobó la materia','Tuvo que repetir el curso','El examen fue difícil'],correct:0,explanation:'No estudiar es la CAUSA; reprobar y repetir son los EFECTOS.',remember:'La causa origina el hecho; el efecto es la consecuencia. "Como", "porque" y "ya que" marcan causas.'},
+      {mission:'Nivel crítico',fragment:'"El rey ordenó destruir todos los libros del reino para que nadie pudiera leer ideas peligrosas."',hint:'¿Qué reflexión crítica genera este fragmento?',question:'¿Qué juicio crítico se puede emitir sobre la acción del rey?',options:['Es una censura que atenta contra la libertad de expresión','Es una medida justa para mantener el orden','Es una decisión económicamente razonable','Es un problema solo para los escritores'],correct:0,explanation:'Destruir libros es censura: impide el acceso al conocimiento y atenta contra la libertad de pensamiento.',remember:'El nivel crítico implica emitir un juicio de valor basado en el texto y nuestros conocimientos.'},
+      {mission:'Inferencia de personaje',fragment:'"Siempre llegaba el primero a la biblioteca. Devolvía los libros el mismo día. Sabía de memoria los títulos de cada estante."',hint:'¿Qué tipo de persona es este personaje?',question:'¿Qué podemos inferir sobre este personaje?',options:['Es un lector apasionado y disciplinado','Le gusta el deporte y la aventura','Trabaja como cocinero','Tiene miedo de los libros'],correct:0,explanation:'Llegar primero, devolver rápido y conocer los títulos de memoria describe a un lector apasionado y metódico.',remember:'Las acciones de un personaje nos permiten inferir su carácter y motivaciones.'},
+      {mission:'Texto y subtexto',fragment:'"Cuando le preguntaron si le gustaba el regalo, Elena sonrió levemente y dijo: «Muy interesante»."',hint:'¿La respuesta de Elena es completamente sincera?',question:'¿Qué podemos inferir sobre la opinión real de Elena?',options:['Probablemente no le gustó mucho el regalo','Le encantó el regalo y está feliz','No vio el regalo todavía','Elena no escuchó la pregunta'],correct:0,explanation:'Una sonrisa leve y "muy interesante" son respuestas evasivas: insinúan que el regalo no le gustó del todo.',remember:'El subtexto es lo que los personajes comunican sin decirlo explícitamente.'},
+    ]
+  },
+
+  /* ─── 5. Mapa de Personajes ─── */
+  {
+    id:5,icon:'🧩',name:'Mapa de Personajes',
+    theme:'Protagonistas, antagonistas y secundarios',
+    color:'#c8a97e',bg:'#1c160e',
+    desc:'Cada historia es un ecosistema de personajes. Aprende a clasificarlos según su rol y función en la trama.',
+    key:'El protagonista es el centro de la historia, el antagonista genera el conflicto y los personajes secundarios enriquecen la trama.',
+    concepts:[
+      {emoji:'⭐',name:'Protagonista',def:'Personaje principal alrededor de quien gira la historia.'},
+      {emoji:'😈',name:'Antagonista',def:'Se opone al protagonista y genera el conflicto.'},
+      {emoji:'🧑‍🤝‍🧑',name:'Secundarios',def:'Apoyan u obstaculizan al protagonista.'},
+      {emoji:'🌑',name:'Planos / Redondos',def:'Los personajes pueden ser redondos (complejos) o planos (simples).'},
+    ],
+    btnColor:'linear-gradient(135deg,#5a3e10,#c8a97e)',
+    questions:[
+      {mission:'Identifica al protagonista',fragment:'En la historia, Tomás pasa toda la novela intentando recuperar la carta que le robaron. Es el personaje más desarrollado y sus emociones guían la trama.',hint:'¿Alrededor de quién gira toda la historia?',question:'¿Qué tipo de personaje es Tomás?',options:['Protagonista','Antagonista','Personaje secundario','Narrador'],correct:0,explanation:'Tomás es el personaje central: sus acciones y emociones son el eje de la trama. Es el protagonista.',remember:'El protagonista es el personaje principal: la historia gira a su alrededor.'},
+      {mission:'El antagonista actúa',fragment:'"El señor Krauss tenía el poder de arruinar a cualquiera. Era él quien había robado la carta de Tomás y quien ponía obstáculos en cada uno de sus pasos."',hint:'¿Quién genera el conflicto y se opone al héroe?',question:'¿Qué tipo de personaje es el señor Krauss?',options:['Antagonista','Protagonista','Personaje secundario','Narrador omnisciente'],correct:0,explanation:'El señor Krauss se opone al protagonista y genera el conflicto. Eso es un antagonista.',remember:'El antagonista es el oponente del protagonista; puede ser una persona, una fuerza o una idea.'},
+      {mission:'Los secundarios importan',fragment:'"Marta era la mejor amiga de Tomás. No tenía un papel central, pero siempre aparecía para darle ánimos cuando él más lo necesitaba."',hint:'¿Es el personaje principal o tiene un papel de apoyo?',question:'¿Qué tipo de personaje es Marta?',options:['Personaje secundario','Protagonista','Antagonista','Narrador'],correct:0,explanation:'Marta apoya al protagonista pero no es el centro de la historia. Es un personaje secundario.',remember:'Los personajes secundarios enriquecen la trama y acompañan al protagonista.'},
+      {mission:'Personaje redondo',fragment:'"Al principio, el guardia era cruel e insensible. Pero tras conocer la historia de Tomás, comenzó a dudar, a sentir compasión y finalmente lo ayudó a escapar."',hint:'¿El personaje cambia o evoluciona durante la historia?',question:'¿Cómo se llama un personaje que evoluciona y tiene gran profundidad psicológica?',options:['Personaje redondo','Personaje plano','Personaje estático','Narrador homodiegético'],correct:0,explanation:'El guardia cambia su forma de pensar y actuar. Un personaje psicológicamente complejo que evoluciona es redondo.',remember:'Los personajes redondos cambian; los planos permanecen estáticos durante toda la historia.'},
+      {mission:'¿Protagonista o antagonista?',fragment:'"En Romeo y Julieta, las familias Montesco y Capuleto se odian y ese odio impide que los enamorados estén juntos."',hint:'¿Cuál es el elemento que genera el conflicto aquí?',question:'¿Qué función cumplen las familias en relación a Romeo y Julieta?',options:['Antagonistas colectivos','Protagonistas secundarios','Narradores externos','Personajes planos positivos'],correct:0,explanation:'Las familias generan el conflicto principal. Son un antagonista colectivo.',remember:'Un antagonista puede ser una persona, un grupo, una sociedad o una fuerza de la naturaleza.'},
+      {mission:'El personaje plano',fragment:'"El villano del cuento era siempre malvado. No tenía razones ni pasado: simplemente era cruel y nunca cambió."',hint:'¿El personaje tiene profundidad o es predecible?',question:'¿Cómo se clasifica este tipo de personaje?',options:['Personaje plano','Personaje redondo','Protagonista','Personaje alegórico'],correct:0,explanation:'Sin evolución ni profundidad psicológica, predecible y simple. Eso es un personaje plano.',remember:'Los personajes planos tienen una sola característica dominante y no cambian en la historia.'},
+      {mission:'Protagonista colectivo',fragment:'"La novela narra las aventuras de un grupo de amigos que recorren el mundo. Ninguno es más importante que otro: todos comparten el protagonismo."',hint:'¿Puede haber más de un personaje principal?',question:'¿Cómo se llama cuando varios personajes comparten el papel principal?',options:['Protagonista colectivo','Coprotagonistas antagónicos','Personajes secundarios múltiples','Narradores múltiples'],correct:0,explanation:'Cuando varios personajes comparten el papel principal sin que uno destaque, hay un protagonista colectivo.',remember:'El protagonismo puede ser individual o colectivo, dependiendo de la estructura de la historia.'},
+      {mission:'Función del personaje aliado',fragment:'"El mentor del héroe le enseñó las habilidades que necesitaría para su misión. Sin él, el protagonista hubiera fracasado desde el inicio."',hint:'¿El personaje ayuda al protagonista?',question:'¿Qué función cumple el mentor en la historia?',options:['Personaje secundario aliado','Antagonista','Protagonista','Narrador testigo'],correct:0,explanation:'El mentor apoya activamente al protagonista pero no es el personaje principal. Es un aliado secundario.',remember:'Los personajes secundarios aliados apoyan al protagonista; los opositores lo dificultan.'},
+      {mission:'El narrador personaje',fragment:'"Yo soy el mayordomo de la mansión. Fui testigo de todo lo que ocurrió aquella noche y ahora debo contarlo."',hint:'¿El narrador también participa en la historia?',question:'¿Qué tipo de narrador es este?',options:['Narrador protagonista (homodiegético)','Narrador omnisciente externo','Narrador en segunda persona','Narrador dramático'],correct:0,explanation:'El narrador usa "yo" y es parte de la historia. Eso es un narrador homodiegético o en primera persona.',remember:'Cuando el narrador también es personaje, se llama narrador homodiegético.'},
+      {mission:'Antagonismo no humano',fragment:'"El mayor enemigo de los marineros no era ningún hombre: era el mar mismo, con sus tormentas impredecibles y sus corrientes traicioneras."',hint:'¿El antagonista tiene que ser una persona?',question:'¿Qué actúa como antagonista en este fragmento?',options:['El mar (fuerza de la naturaleza)','El capitán del barco','Los marineros rivales','El viento del norte'],correct:0,explanation:'El mar actúa como el elemento que genera el conflicto y se opone a los personajes. Es un antagonista natural.',remember:'El antagonismo puede venir de la naturaleza, la sociedad o fuerzas abstractas, no solo de personas.'},
+    ]
+  },
+
+  /* ─── 6. Explorador de Figuras Literarias ─── */
+  {
+    id:6,icon:'🖋️',name:'Explorador de Figuras Literarias',
+    theme:'Metáfora, símil, hipérbole y personificación',
+    color:'#a89880',bg:'#16140f',
+    desc:'Las figuras literarias son el corazón del lenguaje poético. Descúbrelas, nómbralas y úsalas para enriquecer tu escritura.',
+    key:'La metáfora compara sin nexo, el símil compara con "como", la hipérbole exagera y la personificación da vida a objetos inanimados.',
+    concepts:[
+      {emoji:'🌙',name:'Metáfora',def:'Compara dos realidades sin usar "como" ni "parece".'},
+      {emoji:'🌊',name:'Símil',def:'Compara dos realidades usando "como", "parece" o "cual".'},
+      {emoji:'💥',name:'Hipérbole',def:'Exageración intencional para enfatizar algo.'},
+      {emoji:'🌳',name:'Personificación',def:'Se le dan características humanas a seres no humanos.'},
+    ],
+    btnColor:'linear-gradient(135deg,#3a3020,#a89880)',
+    questions:[
+      {mission:'Reconoce la metáfora',fragment:'"Tus palabras son cuchillos que atraviesan mi alma."',hint:'¿Se compara sin usar "como"?',question:'¿Qué figura literaria se usa en este verso?',options:['Metáfora','Símil','Hipérbole','Personificación'],correct:0,explanation:'Las palabras son identificadas con cuchillos sin decir "como cuchillos". Eso es una metáfora.',remember:'La metáfora dice que A ES B, sin comparadores como "como" o "parece".'},
+      {mission:'¿Símil o metáfora?',fragment:'"Sus ojos brillaban como estrellas en una noche sin luna."',hint:'¿Se usa la palabra "como"?',question:'¿Qué figura literaria es esta?',options:['Símil','Metáfora','Hipérbole','Aliteración'],correct:0,explanation:'Hay un nexo comparativo ("como") entre los ojos y las estrellas. Cuando se usa "como", es un SÍMIL.',remember:'El símil compara usando nexos: "como", "cual", "parece", "semejante a".'},
+      {mission:'Exageración creativa',fragment:'"Te he llamado un millón de veces y nunca contestas."',hint:'¿Es posible llamar literalmente un millón de veces?',question:'¿Qué figura literaria es esta frase?',options:['Hipérbole','Metáfora','Símil','Antítesis'],correct:0,explanation:'Nadie llama un millón de veces. Es una exageración para enfatizar frustración. Eso es hipérbole.',remember:'La hipérbole exagera intencionalmente para dar énfasis emocional al texto.'},
+      {mission:'La naturaleza habla',fragment:'"El viento susurraba secretos entre los árboles mientras la luna observaba el valle con curiosidad."',hint:'¿El viento y la luna tienen acciones propias de los humanos?',question:'¿Qué figura literaria se usa aquí?',options:['Personificación','Metáfora','Hipérbole','Eufemismo'],correct:0,explanation:'El viento "susurra" y la luna "observa": acciones humanas en elementos naturales. Es personificación.',remember:'La personificación da cualidades o acciones humanas a animales, objetos o elementos de la naturaleza.'},
+      {mission:'Detecta la figura',fragment:'"Era tan flaca que al tomar sopa se veía el caldo correr por dentro."',hint:'¿Es una exageración o una comparación directa?',question:'¿Qué figura literaria se usa en esta frase popular?',options:['Hipérbole','Símil','Personificación','Metáfora'],correct:0,explanation:'Es una exageración humorística imposible para describir la delgadez: hipérbole.',remember:'La hipérbole puede ser humorística. Siempre implica una exageración imposible o extrema.'},
+      {mission:'Metáfora del amor',fragment:'"Eres el faro que guía mi barco en la más oscura tormenta."',hint:'¿Se identifica a la persona con un faro directamente?',question:'¿Qué figura literaria aparece?',options:['Metáfora','Símil','Personificación','Hipérbole'],correct:0,explanation:'La persona es identificada directamente como "el faro" sin usar "como". Eso es una metáfora.',remember:'En la metáfora, una cosa se convierte en otra: A es B.'},
+      {mission:'Símil de valentía',fragment:'"El soldado luchó en el campo de batalla cual león enfurecido."',hint:'¿Se compara con un nexo comparativo?',question:'¿Qué figura literaria usa "cual"?',options:['Símil','Metáfora','Hipérbole','Personificación'],correct:0,explanation:'"Cual" es un nexo comparativo (equivalente a "como"). La comparación con un nexo es un símil.',remember:'El símil puede usar "como", "cual", "parece" o "semejante a" para comparar.'},
+      {mission:'Personificación clásica',fragment:'"La muerte llegó silenciosa, golpeó la puerta tres veces y esperó con paciencia."',hint:'¿La muerte tiene acciones humanas aquí?',question:'¿Qué figura literaria convierte a la muerte en un ser que actúa?',options:['Personificación','Símil','Metáfora','Hipérbole'],correct:0,explanation:'La muerte golpea y espera: acciones humanas. Dar comportamiento humano a un concepto abstracto es personificación.',remember:'La personificación se aplica también a conceptos abstractos como la muerte, el tiempo o la justicia.'},
+      {mission:'Hipérbole de tristeza',fragment:'"He llorado un océano de lágrimas desde que te fuiste."',hint:'¿Se exagera la cantidad para expresar intensidad emocional?',question:'¿Qué figura literaria transmite la intensidad del llanto?',options:['Hipérbole','Metáfora','Símil','Personificación'],correct:0,explanation:'Nadie puede llorar un océano literalmente. Es una exageración para expresar dolor profundo: hipérbole.',remember:'La hipérbole es una exageración deliberada que intensifica el sentido de lo que se dice.'},
+      {mission:'Distingue tres figuras',fragment:'"Sus manos eran hielo." / "Sus manos estaban frías como el hielo." / "¡Sus manos congelaron el mundo!"',hint:'Compara las tres frases: ¿cuál usa nexo, cuál no, cuál exagera?',question:'¿En qué orden aparecen metáfora, símil e hipérbole?',options:['Metáfora – Símil – Hipérbole','Símil – Metáfora – Hipérbole','Hipérbole – Símil – Metáfora','Metáfora – Hipérbole – Símil'],correct:0,explanation:'"Son hielo" = metáfora. "Frías como el hielo" = símil. "Congelaron el mundo" = hipérbole.',remember:'Metáfora: A es B. Símil: A es como B. Hipérbole: exageración extrema.'},
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+//  AUDIO
+// ══════════════════════════════════════════
+let audioCtx=null, soundEnabled=true;
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,type,dur,vol=0.15,delay=0){
+  if(!soundEnabled)return;
+  try{const ctx=getAudioCtx(),o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);o.type=type;o.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+  g.gain.setValueAtTime(0,ctx.currentTime+delay);g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
+  g.gain.linearRampToValueAtTime(0,ctx.currentTime+delay+dur);o.start(ctx.currentTime+delay);o.stop(ctx.currentTime+delay+dur+0.05);}catch(e){}
+}
+function soundStart(){[261,329,392,523].forEach((f,i)=>playTone(f,'sine',0.25,0.12,i*.12));}
+function soundSelect(){playTone(440,'triangle',0.1,0.1);}
+function soundCorrect(){[523,659,784,1047].forEach((f,i)=>playTone(f,'sine',0.2,0.13,i*.1));}
+function soundWrong(){playTone(200,'sawtooth',0.15,0.12);playTone(180,'sawtooth',0.15,0.12,0.15);}
+function soundAlert(){playTone(880,'sine',0.08,0.08);playTone(880,'sine',0.08,0.08,0.2);}
+
+// ══════════════════════════════════════════
+//  AMBIENT
+// ══════════════════════════════════════════
+const AMBIENT_CHARS=['📖','📜','✨','🪶','🎭','⭐','🌙','📝','🔮','📚','🗺️','🔍','✍️'];
+function buildAmbient(){
+  const el=document.getElementById('ambient');
+  for(let i=0;i<18;i++){
+    const s=document.createElement('span');
+    s.textContent=AMBIENT_CHARS[Math.floor(Math.random()*AMBIENT_CHARS.length)];
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(20+Math.random()*30)+'s';
+    s.style.animationDelay=(Math.random()*25)+'s';
+    s.style.fontSize=(1+Math.random()*1.5)+'rem';
+    el.appendChild(s);
+  }
+}
+
+// ══════════════════════════════════════════
+//  CONFETTI
+// ══════════════════════════════════════════
+let confettiParticles=[],confettiAnimId=null;
+const confCanvas=document.getElementById('confetti-canvas'),confCtx=confCanvas.getContext('2d');
+function launchConfetti(){
+  confCanvas.width=window.innerWidth;confCanvas.height=window.innerHeight;confettiParticles=[];
+  for(let i=0;i<120;i++)confettiParticles.push({x:Math.random()*confCanvas.width,y:-10-Math.random()*100,r:4+Math.random()*6,d:2+Math.random()*3,color:`hsl(${Math.random()*360},90%,65%)`,tilt:Math.random()*10-5,tiltAngle:0,tiltAngleInc:.05+Math.random()*.1});
+  if(confettiAnimId)cancelAnimationFrame(confettiAnimId);
+  animateConfetti();
+  setTimeout(()=>{cancelAnimationFrame(confettiAnimId);confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);},3000);
+}
+function animateConfetti(){
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+  confettiParticles.forEach(p=>{p.tiltAngle+=p.tiltAngleInc;p.y+=p.d;p.tilt=Math.sin(p.tiltAngle)*12;confCtx.fillStyle=p.color;confCtx.beginPath();confCtx.ellipse(p.x,p.y,p.r,p.r/2,p.tilt,0,Math.PI*2);confCtx.fill();});
+  confettiParticles=confettiParticles.filter(p=>p.y<confCanvas.height+20);
+  if(confettiParticles.length>0)confettiAnimId=requestAnimationFrame(animateConfetti);
+}
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+const LEVELS_PER_SESSION=5;
+let currentWorldIdx=0, sessionLevels=[], currentLevel=0, score=0, lives=3;
+let timerInterval=null, timerSeconds=0, answered=false;
+const TIMER_MAX=25;
+
+// ══════════════════════════════════════════
+//  BUILD HOME
+// ══════════════════════════════════════════
+function buildHome(){
+  const grid=document.getElementById('worldsGrid');
+  grid.innerHTML='';
+  WORLDS.forEach((w,i)=>{
+    const card=document.createElement('div');
+    card.className='world-card';
+    card.setAttribute('data-world',w.id);
+    card.innerHTML=`<span class="world-icon">${w.icon}</span><div class="world-name">${w.name}</div><div class="world-theme">${w.theme}</div><div class="world-levels">${w.questions.length} preguntas · 5 por sesión · Juega ya →</div>`;
+    card.addEventListener('click',()=>openLesson(i));
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════
+//  LESSON
+// ══════════════════════════════════════════
+function openLesson(idx){
+  soundStart();currentWorldIdx=idx;const w=WORLDS[idx];
+  document.getElementById('lessonIcon').textContent=w.icon;
+  document.getElementById('lessonName').textContent=w.name;
+  document.getElementById('lessonName').style.color=w.color;
+  document.getElementById('lessonSubtitle').textContent=w.theme;
+  document.getElementById('lessonDesc').textContent=w.desc;
+  document.getElementById('lessonKey').textContent=w.key;
+  document.getElementById('screen-lesson').style.background=`radial-gradient(ellipse at 30% 20%,${w.bg},#0c0906 80%)`;
+  const btn=document.getElementById('btnPlay');btn.style.background=w.btnColor;btn.style.color='#fff';
+  const cg=document.getElementById('conceptsGrid');cg.innerHTML='';
+  w.concepts.forEach(c=>{const d=document.createElement('div');d.className='concept-card';d.innerHTML=`<span class="concept-emoji">${c.emoji}</span><div class="concept-name" style="color:${w.color}">${c.name}</div><div class="concept-def">${c.def}</div>`;cg.appendChild(d);});
+  showScreen('screen-lesson');
+}
+document.getElementById('lessonBack').addEventListener('click',goHome);
+document.getElementById('btnPlay').addEventListener('click',startGame);
+
+// ══════════════════════════════════════════
+//  GAME — selección aleatoria + opciones barajadas
+// ══════════════════════════════════════════
+function startGame(){
+  const w=WORLDS[currentWorldIdx];
+  // 1. Elegir N preguntas al azar del banco
+  const picked=pickRandom(w.questions,LEVELS_PER_SESSION);
+  // 2. Barajar las opciones de cada pregunta (nuevo índice correcto)
+  sessionLevels=picked.map(q=>{
+    const sh=shuffleOptions(q);
+    return{...q, options:sh.options, correct:sh.correct};
+  });
+  currentLevel=0;score=0;lives=3;
+  showScreen('screen-game');
+  applyWorldTheme();
+  loadLevel();
+}
+
+function applyWorldTheme(){
+  const w=WORLDS[currentWorldIdx];
+  document.getElementById('screen-game').style.background=`radial-gradient(ellipse at 50% 0%,${w.bg},#0c0906 80%)`;
+  document.getElementById('hudWorldName').textContent=`${w.icon} ${w.name}`;
+  document.getElementById('hudWorldName').style.color=w.color;
+  document.querySelector('.progress-bar').style.background=`linear-gradient(90deg,${w.color},${w.color}88)`;
+}
+
+function loadLevel(){
+  if(currentLevel>=sessionLevels.length){showEnd();return;}
+  answered=false;
+  const lv=sessionLevels[currentLevel];
+  updateHUD();
+  const pct=(currentLevel/sessionLevels.length)*100;
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=`Nivel ${currentLevel+1} / ${sessionLevels.length}`;
+  document.getElementById('hudQBadge').textContent=`Pregunta ${currentLevel+1} de ${sessionLevels.length}`;
+  document.getElementById('levelMission').textContent=`🎯 ${lv.mission}`;
+  document.getElementById('levelFragment').textContent=lv.fragment;
+  document.getElementById('levelHint').textContent=lv.hint;
+  document.getElementById('levelQuestion').textContent=lv.question;
+  const og=document.getElementById('optionsGrid');og.innerHTML='';
+  lv.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='option-btn';
+    btn.textContent=`${['A','B','C','D'][i]}) ${opt}`;
+    btn.addEventListener('click',()=>selectOption(i,btn));
+    og.appendChild(btn);
+  });
+  startTimer();
+}
+
+function updateHUD(){
+  document.getElementById('hudScore').textContent=`⭐ ${score}`;
+  document.getElementById('hudLives').textContent=Array.from({length:3},(_,i)=>i<lives?'❤️':'🖤').join('');
+}
+
+function startTimer(){
+  clearInterval(timerInterval);timerSeconds=TIMER_MAX;updateTimerBar();
+  timerInterval=setInterval(()=>{
+    timerSeconds--;updateTimerBar();
+    if(timerSeconds===6)soundAlert();
+    if(timerSeconds<=0){
+      clearInterval(timerInterval);
+      if(!answered){
+        answered=true;lives=Math.max(0,lives-1);disableOptions();soundWrong();
+        const lv=sessionLevels[currentLevel];
+        showModal(false,'⏰','¡Se acabó el tiempo!',`Respuesta correcta: ${lv.options[lv.correct]}. ${lv.explanation}`,lv.remember,true);
+      }
+    }
+  },1000);
+}
+
+function updateTimerBar(){
+  const pct=(timerSeconds/TIMER_MAX)*100;
+  const bar=document.getElementById('timerBar');bar.style.width=pct+'%';bar.className='timer-bar';
+  if(timerSeconds<=6)bar.classList.add('danger');
+  else if(timerSeconds<=12)bar.classList.add('warning');
+}
+
+function selectOption(idx){
+  if(answered)return;answered=true;clearInterval(timerInterval);soundSelect();
+  const lv=sessionLevels[currentLevel];const correct=idx===lv.correct;
+  document.querySelectorAll('.option-btn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===lv.correct)b.classList.add('correct');
+    else if(i===idx&&!correct)b.classList.add('wrong');
+  });
+  if(correct){
+    score+=Math.max(10,Math.round(timerSeconds*4));soundCorrect();launchConfetti();
+    showModal(true,'✅','¡Correcto!',lv.explanation,lv.remember,false);
+  }else{
+    lives=Math.max(0,lives-1);soundWrong();
+    showModal(false,'❌','¡Incorrecto!',`Respuesta correcta: ${lv.options[lv.correct]}. ${lv.explanation}`,lv.remember,lives<=0);
+  }
+  updateHUD();
+}
+
+function disableOptions(){document.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);}
+
+// ══════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════
+function showModal(correct,icon,title,explanation,remember,gameOver){
+  document.getElementById('modalIcon').textContent=icon;
+  const tEl=document.getElementById('modalTitle');tEl.textContent=gameOver?'¡Sin vidas!':title;tEl.className='modal-title '+(correct?'correct':'wrong');
+  document.getElementById('modalExplanation').textContent=explanation;
+  document.getElementById('modalRemember').textContent='📌 '+remember;
+  const btn=document.getElementById('modalBtn');
+  if(gameOver){btn.textContent='💀 Ver resultados';btn.className='modal-btn wrong-btn';btn._gameOver=true;}
+  else if(correct){btn.textContent='Siguiente nivel →';btn.className='modal-btn correct-btn';btn._gameOver=false;}
+  else{btn.textContent='Continuar →';btn.className='modal-btn wrong-btn';btn._gameOver=false;}
+  document.getElementById('feedbackModal').classList.add('active');
+}
+function modalNext(){
+  document.getElementById('feedbackModal').classList.remove('active');
+  if(document.getElementById('modalBtn')._gameOver||lives<=0){showEnd();return;}
+  currentLevel++;loadLevel();
+}
+
+// ══════════════════════════════════════════
+//  END
+// ══════════════════════════════════════════
+function showEnd(){
+  clearInterval(timerInterval);const w=WORLDS[currentWorldIdx];
+  const total=sessionLevels.length*TIMER_MAX*4,pct=Math.round((score/total)*100);
+  let trophy='🏆',title2='¡Misión completada!',msg='';
+  if(pct>=80){trophy='🥇';msg=`¡Desempeño excepcional en ${w.name}! Dominas el tema.`;}
+  else if(pct>=50){trophy='🥈';msg=`Buen trabajo en ${w.name}. ¡Sigue practicando!`;}
+  else{trophy='📚';title2='Sigue aprendiendo';msg=`Revisa la lección de ${w.name} e intenta de nuevo.`;}
+  document.getElementById('endTrophy').textContent=trophy;
+  document.getElementById('endTitle').textContent=title2;
+  document.getElementById('endScore').textContent=`${score} pts`;
+  document.getElementById('endMessage').textContent=msg;
+  showScreen('screen-end');
+  if(pct>=50)launchConfetti();
+}
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function goHome(){clearInterval(timerInterval);document.getElementById('feedbackModal').classList.remove('active');showScreen('screen-home');}
+document.getElementById('gameHomeBtn').addEventListener('click',goHome);
+document.getElementById('soundBtn').addEventListener('click',()=>{soundEnabled=!soundEnabled;document.getElementById('soundBtn').textContent=soundEnabled?'🔊':'🔇';});
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+buildAmbient();
+buildHome();
+</script>
+</body>
+</html>
